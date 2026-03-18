@@ -1,7 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+
+function setupSwagger(app: INestApplication) {
+  const config = new DocumentBuilder()
+    .setTitle('Engager Recruitment API')
+    .setDescription('API for Engager Recruitment backend')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('/docs', app, document);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,15 +23,10 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  setupSwagger(app);
 
-  const config = new DocumentBuilder()
-    .setTitle('Engager Recruitment API')
-    .setDescription('API for Engager Recruitment backend')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
-  await app.listen(process.env.PORT ?? 3000);
+  const configService = app.get(ConfigService);
+  const port = configService.getOrThrow<number>('PORT');
+  await app.listen(port);
 }
 bootstrap();
