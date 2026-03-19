@@ -14,16 +14,24 @@ export class TasksService {
     return this.tasksRepository.create(createTaskDto);
   }
 
-  async findAll({ limit, cursor }: GetTasksDto): Promise<GetTasksResponse> {
+  async findAll({
+    limit,
+    cursor,
+    status,
+  }: GetTasksDto): Promise<GetTasksResponse> {
     const query = this.tasksRepository
       .createQueryBuilder()
       .orderBy('task.createdAt', 'DESC')
       .addOrderBy('task.id', 'DESC')
       .take(limit + 1);
 
+    if (status) {
+      query.andWhere('task.status = :status', { status });
+    }
+
     if (cursor) {
       const { id, createdAt } = decodeCursor(cursor);
-      query.where(
+      query.andWhere(
         '(task.createdAt < :createdAt) OR (task.createdAt = :createdAt AND task.id < :id)',
         { createdAt, id },
       );

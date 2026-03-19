@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateTaskResponse } from './create-task.dto';
+import { TaskStatus } from '../entities/task.entity';
 
 export class GetTasksDto {
   @ApiProperty({
@@ -25,6 +26,15 @@ export class GetTasksDto {
   @IsOptional()
   @IsString()
   cursor?: string;
+
+  @ApiProperty({
+    required: false,
+    enum: TaskStatus,
+    description: 'Filter tasks by status',
+  })
+  @IsOptional()
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
 }
 
 export class GetTasksResponseMeta {

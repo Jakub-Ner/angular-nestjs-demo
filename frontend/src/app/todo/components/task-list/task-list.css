@@ -1,0 +1,3 @@
+.task-grid-cols {
+  @apply grid-cols-[1fr_200px_200px_120px_100px];
+}
