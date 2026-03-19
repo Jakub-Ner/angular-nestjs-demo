@@ -1,16 +1,23 @@
 import { ConfigModule } from '@nestjs/config';
-import Joi from 'joi';
+import { z } from 'zod';
 
-const envVarsSchema = Joi.object({
-  PORT: Joi.number().default(3000),
-  DB_PATH: Joi.string().default('db.sqlite'),
+const envVarsSchema = z.object({
+  PORT: z.coerce.number().default(3000),
+  ENV: z.enum(['development', 'production', 'test']).default('test'),
+  DATABASE_URL: z
+    .string()
+    .default('postgresql://postgres:postgres@localhost:5432/todo_app'),
 });
+
+type AppConfig = z.infer<typeof envVarsSchema>;
+
+export const getAppConfig = (): AppConfig => {
+  return envVarsSchema.parse(process.env);
+};
 
 export const configModule = ConfigModule.forRoot({
   isGlobal: true,
-  validationSchema: envVarsSchema,
-  validationOptions: {
-    abortEarly: true,
-    allowUnknown: true,
+  validate: (config) => {
+    return envVarsSchema.parse(config);
   },
 });

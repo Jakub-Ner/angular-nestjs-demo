@@ -13,8 +13,8 @@ import { configModule } from './config';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'better-sqlite3',
-        database: configService.get<string>('DB_PATH'),
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: true,
       }),

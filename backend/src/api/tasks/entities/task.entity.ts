@@ -1,11 +1,20 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  IsDate,
   IsDateString,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Index,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 export enum TaskStatus {
   OPEN = 'OPEN',
@@ -13,10 +22,19 @@ export enum TaskStatus {
 }
 
 @Entity()
+@Index(['createdAt', 'id'])
 export class Task {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty()
+  @CreateDateColumn({ type: 'timestamptz', precision: 3 })
+  @Type(() => Date)
+  @IsDate()
+  createdAt: Date;
+
+  @ApiProperty()
   @Column({
     type: 'varchar',
     length: 255,
@@ -25,16 +43,19 @@ export class Task {
   @IsNotEmpty()
   title: string;
 
+  @ApiProperty({ required: false })
   @Column({ nullable: true })
   @IsOptional()
   @IsDateString()
   due?: Date;
 
+  @ApiProperty({ required: false })
   @Column({ nullable: true })
   @IsOptional()
   @IsDateString()
   completedAt?: Date;
 
+  @ApiProperty({ enum: TaskStatus, default: TaskStatus.OPEN })
   @Column({
     type: 'varchar',
   })

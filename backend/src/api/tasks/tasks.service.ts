@@ -1,29 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateTaskDto, CreateTaskResponse } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksRepository } from './tasks.repository';
+import { GetTasksDto, GetTasksResponse } from './dto/get-tasks-dto';
+import { decodeCursor, encodeCursor } from 'src/common/pagination-cursor';
+import { Task } from './entities/task.entity';
 
 @Injectable()
 export class TasksService {
   constructor(private readonly tasksRepository: TasksRepository) {}
 
-  create(createTaskDto: CreateTaskDto) {
+  create(createTaskDto: CreateTaskDto): Promise<CreateTaskResponse> {
     return this.tasksRepository.create(createTaskDto);
   }
 
-  findAll() {
-    return this.tasksRepository.findAll();
+  async findAll({ limit, cursor }: GetTasksDto): Promise<GetTasksResponse> {
+    const query = this.tasksRepository
+      .createQueryBuilder()
+      .orderBy('task.createdAt', 'DESC')
+      .addOrderBy('task.id', 'DESC')
+      .take(limit + 1);
+
+    if (cursor) {
+      const { id, createdAt } = decodeCursor(cursor);
+      query.where(
+        '(task.createdAt < :createdAt) OR (task.createdAt = :createdAt AND task.id < :id)',
+        { createdAt, id },
+      );
+    }
+    const tasks = await query.getMany();
+
+    const hasMore = tasks.length > limit;
+    let nextCursor: string | null = null;
+    if (hasMore) {
+      tasks.pop();
+      const { id, createdAt } = tasks[tasks.length - 1];
+      nextCursor = encodeCursor({ id, createdAt });
+    }
+    return { data: tasks, meta: { nextCursor, hasMore } };
   }
 
-  findOne(id: string) {
+  async findOne(id: string): Promise<Task> {
     return this.tasksRepository.findOne(id);
   }
 
-  update(id: string, updateTaskDto: UpdateTaskDto) {
+  async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
     return this.tasksRepository.update(id, updateTaskDto);
   }
 
-  remove(id: string) {
+  async remove(id: string): Promise<void> {
     return this.tasksRepository.remove(id);
   }
 }

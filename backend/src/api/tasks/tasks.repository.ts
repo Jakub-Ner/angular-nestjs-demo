@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { SelectQueryBuilder } from 'typeorm/browser';
 
 @Injectable()
 export class TasksRepository {
@@ -17,8 +18,8 @@ export class TasksRepository {
     return await this.repository.save(task);
   }
 
-  async findAll(): Promise<Task[]> {
-    return await this.repository.find();
+  createQueryBuilder(): SelectQueryBuilder<Task> {
+    return this.repository.createQueryBuilder('task');
   }
 
   async findOne(id: string): Promise<Task> {
