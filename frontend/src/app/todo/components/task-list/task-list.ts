@@ -1,18 +1,7 @@
-import {
-  Component,
-  computed,
-  input,
-  effect,
-  inject,
-  viewChild,
-  ElementRef,
-  untracked,
-} from '@angular/core';
-import { lastValueFrom } from 'rxjs';
-import { injectInfiniteQuery } from '@tanstack/angular-query-experimental';
-import { injectVirtualizer } from '@tanstack/angular-virtual';
+import { Component, input, inject, viewChild, ElementRef } from '@angular/core';
 import { TasksService } from '../../../api';
 import { DatePipe } from '@angular/common';
+import { injectInfiniteVirtualizer } from '../../../shared/infinite-virtualizer';
 
 @Component({
   selector: 'app-task-list',
@@ -97,51 +86,17 @@ import { DatePipe } from '@angular/common';
 export class TaskList {
   tasksService = inject(TasksService);
   showCompleted = input<boolean>(false);
-
-  infiniteQuery = injectInfiniteQuery(() => ({
-    queryKey: ['tasks', this.showCompleted()],
-    queryFn: ({ pageParam }) => {
-      console.log('Fetching page with cursor:', pageParam);
-      return lastValueFrom(this.tasksService.tasksControllerFindAll(20, pageParam as string));
-    },
-    initialPageParam: null,
-    getNextPageParam: (lastPage) => {
-      return lastPage.meta.hasMore ? lastPage.meta.nextCursor : null;
-    },
-  }));
-
-  allTasks = computed(() => {
-    const currentData = this.infiniteQuery.data();
-    console.log('Current Data:', currentData);
-    return currentData?.pages.flatMap((page) => page.data) ?? [];
-  });
-
   parentRef = viewChild<ElementRef<HTMLElement>>('scrollContainer');
 
-  virtualizer = injectVirtualizer(() => ({
-    count: this.allTasks().length,
-    scrollElement: this.parentRef()?.nativeElement ?? null,
-    estimateSize: () => 100,
-    overscan: 5,
-  }));
+  private infiniteVirtualizer = injectInfiniteVirtualizer({
+    queryKey: (showCompleted) => ['tasks', showCompleted],
+    fetcher: (showCompleted, limit, cursor) =>
+      this.tasksService.tasksControllerFindAll(limit, cursor, showCompleted ? 'DONE' : 'OPEN'),
+    signals: () => this.showCompleted(),
+    scrollElement: () => this.parentRef()?.nativeElement ?? null,
+  });
 
-  constructor() {
-    effect(() => {
-      const virtualItems = this.virtualizer.getVirtualItems();
-
-      if (virtualItems.length === 0) {
-        return;
-      }
-
-      const lastItem = virtualItems[virtualItems.length - 1];
-
-      if (lastItem.index >= this.allTasks().length - 1) {
-        if (this.infiniteQuery.hasNextPage() && !this.infiniteQuery.isFetchingNextPage()) {
-          untracked(() => {
-            this.infiniteQuery.fetchNextPage();
-          });
-        }
-      }
-    });
-  }
+  allTasks = this.infiniteVirtualizer.items;
+  virtualizer = this.infiniteVirtualizer.virtualizer;
+  infiniteQuery = this.infiniteVirtualizer.infiniteQuery;
 }
