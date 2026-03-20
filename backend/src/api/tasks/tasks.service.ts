@@ -53,6 +53,18 @@ export class TasksService {
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    const task = await this.tasksRepository.findOne(id);
+
+    if (updateTaskDto.status === 'DONE' && task.status !== 'DONE') {
+      updateTaskDto.completedAt = new Date();
+    } else if (
+      updateTaskDto.status &&
+      updateTaskDto.status !== 'DONE' &&
+      task.status === 'DONE'
+    ) {
+      updateTaskDto.completedAt = undefined;
+    }
+
     return this.tasksRepository.update(id, updateTaskDto);
   }
 

@@ -1,3 +1,53 @@
+@reference "../../../../styles.css";
+
 .task-grid-cols {
-  @apply grid-cols-[1fr_200px_200px_120px_100px];
+  @apply grid-cols-[1fr_200px_200px_200px_200px_100px];
+}
+
+.task-row {
+  @apply absolute left-0 top-0 grid w-full grid-cols-[1fr_200px_200px_200px_200px_100px] items-center border-b px-4 transition-colors;
+}
+
+.task-cell {
+  @apply p-2;
+}
+
+.task-cell-primary {
+  @apply p-2 flex items-center gap-3 min-w-0;
+}
+
+.task-cell-secondary {
+  @apply p-2 text-sm text-gray-500;
+}
+
+.task-cell-center {
+  @apply p-2 text-center;
+}
+
+.task-cell-right {
+  @apply p-2 text-right flex justify-end gap-3;
+}
+
+.task-checkbox {
+  @apply h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500;
+}
+
+.task-input {
+  @apply rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500;
+}
+
+.task-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+.task-btn {
+  @apply transition-colors;
+}
+
+.task-btn-blue {
+  @apply transition-colors text-blue-600 hover:text-blue-800 active:text-blue-900;
+}
+
+.task-btn-gray {
+  @apply transition-colors text-gray-500 hover:text-gray-700 active:text-gray-900;
 }

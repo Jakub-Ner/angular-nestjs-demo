@@ -1,4 +1,4 @@
-import { computed, effect, untracked, Signal } from '@angular/core';
+import { computed, effect, untracked } from '@angular/core';
 import { lastValueFrom, Observable } from 'rxjs';
 import { injectInfiniteQuery } from '@tanstack/angular-query-experimental';
 import { injectVirtualizer, Virtualizer } from '@tanstack/angular-virtual';
@@ -27,7 +27,7 @@ export function injectInfiniteVirtualizer<T, TParams>({
   signals: signals,
   scrollElement,
   limit = 20,
-  estimateSize = 100,
+  estimateSize = 40,
   overscan = 5,
 }: InfiniteVirtualizerOptions<T, TParams>) {
   const infiniteQuery = injectInfiniteQuery(() => ({
