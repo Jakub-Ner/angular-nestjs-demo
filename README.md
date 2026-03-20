@@ -34,8 +34,7 @@ npm run generate-api                 # Regenerate API client from backend
 ## Key Features
 
 - **Cursor Pagination** – Efficient infinite scroll with no offset performance issues
-- **Virtual Scrolling** – Renders only visible items for 10k+ items
+- **Virtual Scrolling** – Renders only visible items
 - **Optimistic UI** – Instant feedback with background sync
-- **Type Safety** – End-to-end TypeScript with auto-generated API types
 
 ![preview](assets/preview.png)
